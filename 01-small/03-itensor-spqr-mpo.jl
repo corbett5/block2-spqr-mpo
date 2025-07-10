@@ -5,21 +5,23 @@ using ITensorMPOConstruction
 using ITensorMPS
 using ITensors
 
+function count_nnz(H::MPO)::Int
+    return sum(ITensors.nnz(T) for T in H)
+end
+
 function save_mpo(filename, mpo::MPO)
     links = linkinds(mpo)
     sites = noprime(siteinds(first, mpo))
     r = []
     for i in 1:length(mpo)
-        T = mpo[i]
-        QS = inds(T)
-
         if i == 1
-            @assert QS == (links[i], prime(sites[i]), dag(sites[i])) QS
+            T = permute(mpo[i], links[i], prime(sites[i]), dag(sites[i]))
         elseif i == length(mpo)
-            @assert QS == (dag(links[end]), prime(sites[i]), dag(sites[i])) QS
+            T = permute(mpo[i], dag(links[end]), prime(sites[i]), dag(sites[i]))
         else
-            @assert QS == (dag(links[i - 1]), links[i], prime(sites[i]), dag(sites[i])) QS
+            T = permute(mpo[i], dag(links[i - 1]), links[i], prime(sites[i]), dag(sites[i]))
         end
+        QS = inds(T)
 
         all_qns = []
         for j in 1:length(QS)
@@ -57,6 +59,17 @@ function save_mpo(filename, mpo::MPO)
         end
         push!(r, Dict("Q" => all_qns, "D" => blocks))
     end
+
+    totalNNZ = 0
+    for dict in r
+        for (tag, shape, arr) in dict["D"] 
+            @assert prod(shape) == length(arr)
+            totalNNZ += length(arr)
+        end
+    end
+
+    println("The mpo being exported to json has nnz = $totalNNZ")
+
     json_str = JSON3.write(r)
     open(filename, "w") do file
         write(file, json_str)
@@ -152,5 +165,10 @@ n_elec = data["n_elec"]
 
 @time "Total" mpo = electronic_structure_opidsum(ncas, h1e, g2e, ecore)
 println("The maximum bond dimension is $(maxlinkdim(mpo))")
+println("The sparsity is $(ITensorMPOConstruction.sparsity(mpo)) with $(count_nnz(mpo)) nnz")
+println()
+
+ITensorMPS.splitblocks!(linkinds, mpo)
+println("After splitting blocks the sparsity is $(ITensorMPOConstruction.sparsity(mpo)) with $(count_nnz(mpo)) nnz")
 
 save_mpo("03-itensor-spqr-mpo.json", mpo)
