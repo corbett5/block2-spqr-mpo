@@ -1,0 +1,4 @@
+	Constructing OpIDSum: 0.373212 seconds
+	Constructing MPO: 37.506675 seconds (299.05 M allocations: 41.730 GiB, 17.67% gc time, 18.62% compilation time)
+Total: 46.310611 seconds (346.83 M allocations: 44.558 GiB, 15.96% gc time, 33.19% compilation time)
+The maximum bond dimension is 2698

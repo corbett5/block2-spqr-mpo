@@ -1,0 +1,4 @@
+	Constructing OpSum: 0.258396 seconds (3.29 M allocations: 169.047 MiB, 22.35% gc time, 29.91% compilation time)
+	Construcing MPO: 143.015141 seconds (105.84 M allocations: 56.851 GiB, 9.30% gc time, 9.30% compilation time)
+Total: 146.351360 seconds (131.01 M allocations: 58.091 GiB, 9.36% gc time, 11.24% compilation time)
+The maximum bond dimension is 722
